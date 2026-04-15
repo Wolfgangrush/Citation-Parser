@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legal Citation Manager</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f1115;
+      --panel: #171b22;
+      --panel-2: #1f2530;
+      --border: #303947;
+      --text: #edf1f7;
+      --muted: #a8b2c1;
+      --soft: #c7d0dc;
+      --accent: #5db6a5;
+      --accent-strong: #78d6c4;
+      --warn: #d8b15f;
+      --danger: #d45b5b;
+      --input: #10141b;
+      --shadow: rgba(0, 0, 0, .32);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: #121821;
+      color: var(--text);
+      padding: 28px 20px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 12px 30px var(--shadow);
+    }
+    .wrap { max-width: 1320px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 30px; }
+    .muted { color: var(--muted); }
+    header .muted { color: var(--muted); }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .provider {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--soft);
+    }
+    main { padding: 20px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin: 18px 0 0;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .stat strong { display: block; font-size: 28px; color: var(--accent-strong); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
+      gap: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font: inherit;
+      background: var(--input);
+      color: var(--text);
+    }
+    input::placeholder, textarea::placeholder { color: #738093; }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(93, 182, 165, .38);
+      border-color: var(--accent);
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      background: var(--accent);
+      color: #06110f;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:hover { filter: brightness(1.08); }
+    button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+    button.danger { background: var(--danger); color: #fff; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 270px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .badge {
+      border-radius: 6px;
+      background: var(--panel-2);
+      color: var(--soft);
+      padding: 4px 7px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    button.badge {
+      border: 1px solid transparent;
+      font: inherit;
+      line-height: 1.2;
+      white-space: normal;
+    }
+    .provision-badge {
+      background: #1f5fa8;
+      color: #eef6ff;
+      cursor: pointer;
+    }
+    .provision-badge:hover {
+      filter: brightness(1.13);
+    }
+    .badge.type { background: var(--warn); color: #181306; }
+    .result {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #06110f;
+      padding: 5px 8px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .decision-label {
+      margin: 0 0 4px;
+      color: var(--accent-strong);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .summary {
+      color: var(--soft);
+      font-size: 14px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .decision-box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .decision-box h3 { margin-top: 0; }
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+    .empty {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 44px 20px;
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+      padding: 18px;
+      z-index: 10;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: min(920px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      padding: 18px;
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .modal-head h2 { margin: 0; overflow-wrap: anywhere; }
+    .detail h3 { margin: 18px 0 8px; font-size: 13px; color: var(--accent-strong); text-transform: uppercase; }
+    .detail p, .detail li { line-height: 1.55; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .full { grid-column: 1 / -1; }
+    .notice { margin-top: 10px; font-size: 14px; color: var(--accent-strong); }
+    .provision-popover {
+      position: fixed;
+      display: none;
+      width: min(520px, calc(100vw - 24px));
+      max-height: min(560px, calc(100vh - 24px));
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 18px 42px var(--shadow);
+      padding: 14px;
+      z-index: 20;
+    }
+    .provision-popover.active { display: block; }
+    .provision-popover h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+    .provision-popover .source {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .provision-popover pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: var(--soft);
+      font: inherit;
+      line-height: 1.45;
+    }
+    @media (max-width: 860px) {
+      .controls { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .decision-grid { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+      main { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>Legal Citation Manager</h1>
+        <div class="muted">Local searchable library for court judgments</div>
+      </div>
+      <div class="provider">Parser: {{ ai_provider }}</div>
+    </div>
+    <div class="wrap stats">
+      <div class="stat"><strong id="statTotal">{{ stats.total }}</strong><span>Total citations</span></div>
+      <div class="stat"><strong id="statApplications">{{ stats.applications }}</strong><span>Applications</span></div>
+      <div class="stat"><strong id="statPetitions">{{ stats.petitions }}</strong><span>Petitions</span></div>
+      <div class="stat"><strong id="statAppeals">{{ stats.appeals }}</strong><span>Appeals</span></div>
+      <div class="stat"><strong id="statOtherTypes">{{ stats.other_types }}</strong><span>Other case types</span></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <div class="controls">
+        <input id="searchInput" placeholder="Search name, case number, holding, ratio, PDF text">
+        <input id="petitionTypeFilter" list="caseTypeOptions" placeholder="Case type">
+        <input id="sectionFilter" placeholder="Section">
+        <input id="yearFilter" placeholder="Year">
+        <button onclick="applyFilters()">Search</button>
+        <button class="secondary" onclick="resetFilters()">Reset</button>
+      </div>
+      <datalist id="caseTypeOptions">
+        {% for case_type in case_types %}
+        <option value="{{ case_type.display }}"></option>
+        {% endfor %}
+      </datalist>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input type="file" id="pdfUpload" accept="application/pdf" style="max-width:360px;">
+        <button onclick="uploadPdf()">Upload PDF</button>
+        <button class="secondary" onclick="exportGoogle()">Export to Google Docs</button>
+        <span class="notice" id="notice"></span>
+      </div>
+    </section>
+
+    <section id="citationsContainer" class="grid">
+      {% if citations %}
+        {% for c in citations %}
+        {% set brief = c.decision_brief or {} %}
+        {% set provisions = brief.provisions or c.sections or [] %}
+        {% set first_ground = (brief.grounds or [c.ratio or c.holding or 'No grounds extracted.'])[0] %}
+        <article class="card" data-id="{{ c.id }}">
+          <span class="result">{{ brief.result or 'Needs review' }}</span>
+          <h2>{{ c.citation_name }}</h2>
+
+          <div>
+            <div class="decision-label">Plea</div>
+            <div class="summary">{{ brief.plea or c.brief_facts or 'No plea extracted yet.' }}</div>
+          </div>
+
+          <div>
+            <div class="decision-label">Grounds</div>
+            <div class="summary">{{ first_ground[:120] }}{{ '...' if first_ground|length > 120 else '' }}</div>
+          </div>
+
+          <div class="badges">
+            <span class="badge type">{{ c.petition_type or 'Other' }}</span>
+            <span class="badge">{{ c.court or 'Unknown court' }}</span>
+            <span class="badge">{{ c.year or 'No year' }}</span>
+          </div>
+
+          {% if provisions %}
+          <div>
+            <div class="decision-label">Key Provisions</div>
+            <div class="badges">
+              {% for section in provisions[:5] %}
+              <button type="button" class="badge provision-badge" data-ref="{{ section }}" onclick="showProvision(event, this.dataset.ref)">{{ section }}</button>
+              {% endfor %}
+              {% if provisions|length > 5 %}
+              <span class="muted" style="font-size:11px">+{{ provisions|length - 5}} more</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="muted" style="font-size: 12px;">
+            {{ (c.judges or [])[:2]|join(', ') or 'N/A' }}
+            {% if c.case_number %} | {{ c.case_number }}{% endif %}
+          </div>
+
+          <div class="actions">
+            <button onclick="viewCitation({{ c.id }})">View Details</button>
+            <button class="secondary" onclick="editCitation({{ c.id }})">Edit</button>
+            <button class="danger" onclick="deleteCitation({{ c.id }})">Delete</button>
+          </div>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty">
+          <h2>No citations yet</h2>
+          <p class="muted">Send a PDF to the Telegram bot or upload one here.</p>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+
+  <div id="provisionPopover" class="provision-popover" onclick="event.stopPropagation()">
+    <h3 id="provisionTitle">Provision</h3>
+    <div id="provisionSource" class="source"></div>
+    <pre id="provisionText"></pre>
+  </div>
+
+  <div id="viewModal" class="modal" onclick="closeOnBackdrop(event, 'viewModal')">
+    <div class="modal-content detail">
+      <div class="modal-head">
+        <h2 id="viewTitle"></h2>
+        <button class="secondary" onclick="closeModal('viewModal')">Close</button>
+      </div>
+      <div id="viewBody"></div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal" onclick="closeOnBackdrop(event, 'editModal')">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2>Edit Citation</h2>
+        <button class="secondary" onclick="closeModal('editModal')">Close</button>
+      </div>
+      <form id="editForm" class="form-grid" onsubmit="saveCitation(event)">
+        <input type="hidden" id="editId">
+        <label>Citation name<input id="editCitationName"></label>
+        <label>Court<input id="editCourt"></label>
+        <label>Year<input id="editYear"></label>
+        <label>Case type<input id="editPetitionType" list="caseTypeOptions"></label>
+        <label>Detected format<select id="editDetectedFormat"><option>generic</option><option>digilegal_scc</option><option>law_finder</option><option>high_court_order</option></select></label>
+        <label>Case number<input id="editCaseNumber"></label>
+        <label>Neutral citation<input id="editNeutralCitation"></label>
+        <label>Judgment date<input id="editDateJudgment" placeholder="DD-MM-YYYY"></label>
+        <label>Order type<input id="editOrderType"></label>
+        <label>Next hearing date<input id="editNextHearingDate" placeholder="DD-MM-YYYY"></label>
+        <label class="full">Disposition<input id="editDisposition"></label>
+        <label class="full">SCC Citation<input id="editSccCitation" placeholder="(2024) 10 SCC 456"></label>
+        <label class="full">Manupatra Citation<input id="editManupatraCitation" placeholder="Manu/SC/2024/123"></label>
+        <label class="full">Indian Kanoon URL<input id="editIndianKanoonUrl" placeholder="https://indiankanoon.org/doc/..."></label>
+        <label class="full">Bench, comma-separated<input id="editBench"></label>
+        <label class="full">Party names, comma-separated<input id="editPartyNames"></label>
+        <label class="full">Appearances, one per line<textarea id="editAppearances"></textarea></label>
+        <label class="full">Sections, comma-separated<input id="editSections"></label>
+        <label class="full">Laws, comma-separated<input id="editLaws"></label>
+        <label class="full">Cited cases, one per line<textarea id="editCitedCases"></textarea></label>
+        <label class="full">Acts referred, one per line<textarea id="editActsReferred"></textarea></label>
+        <label class="full">DigiLegal/SCC headnote<textarea id="editHeadnote"></textarea></label>
+        <label class="full">Law Finder important principles, one per line<textarea id="editImportantPrinciples"></textarea></label>
+        <label class="full">Law Finder subsections JSON<textarea id="editSubsections" placeholder='{"A":"...","B":"..."}'></textarea></label>
+        <label class="full">Brief facts<textarea id="editBriefFacts"></textarea></label>
+        <label class="full">High Court order directions, one per line<textarea id="editDirections"></textarea></label>
+        <label class="full">Holding<textarea id="editHolding"></textarea></label>
+        <label class="full">Ratio<textarea id="editRatio"></textarea></label>
+        <label class="full">Headnotes, one per line<textarea id="editHeadnotes"></textarea></label>
+        <label class="full">Key quotes, one per line<textarea id="editKeyQuotes"></textarea></label>
+        <label class="full">Judges, comma-separated<input id="editJudges"></label>
+        <label class="full">Tags, comma-separated<input id="editTags"></label>
+        <label class="full">Notes<textarea id="editNotes"></textarea></label>
+        <div class="full actions">
+          <button type="submit">Save</button>
+          <button class="secondary" type="button" onclick="closeModal('editModal')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      }[char]));
+    }
+    function commaToArray(value) {
+      return value.split(',').map(v => v.trim()).filter(Boolean);
+    }
+    function linesToArray(value) {
+      return value.split('\n').map(v => v.trim()).filter(Boolean);
+    }
+    function arrayToComma(value) {
+      return (value || []).join(', ');
+    }
+    function arrayToLines(value) {
+      return (value || []).join('\n');
+    }
+    function firstValue(values, fallback) {
+      return (values || []).find(Boolean) || fallback;
+    }
+    function listHtml(values) {
+      return (values || []).map(h => `<li>${esc(h)}</li>`).join('') || '<li>N/A</li>';
+    }
+    function isSectionRef(value) {
+      return /(?:§|\bsection\b|\bsec\.?\b|\bs\.\b)/i.test(String(value || ''));
+    }
+    function sectionRefs(values) {
+      const seen = new Set();
+      return (values || []).filter(value => {
+        const key = String(value || '').toLowerCase();
+        if (!isSectionRef(value) || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    function plainBadgeHtml(value) {
+      return `<span class="badge">${esc(value)}</span>`;
+    }
+    function provisionBadgeHtml(ref) {
+      return `<button type="button" class="badge provision-badge" data-ref="${esc(ref)}" onclick="showProvision(event, this.dataset.ref)">${esc(ref)}</button>`;
+    }
+    function provisionInlineHtml(values) {
+      return sectionRefs(values).map(provisionBadgeHtml).join(' ') || 'N/A';
+    }
+    function provisionBadgeListHtml(values) {
+      return sectionRefs(values).slice(0, 4).map(provisionBadgeHtml).join('');
+    }
+    function closeProvision() {
+      document.getElementById('provisionPopover').classList.remove('active');
+    }
+    function placeProvisionPopover(event) {
+      const popover = document.getElementById('provisionPopover');
+      const margin = 12;
+      const width = Math.min(520, window.innerWidth - margin * 2);
+      let left = event.clientX + margin;
+      let top = event.clientY + margin;
+      if (left + width > window.innerWidth - margin) left = window.innerWidth - width - margin;
+      if (top + 360 > window.innerHeight - margin) top = margin;
+      popover.style.left = `${Math.max(margin, left)}px`;
+      popover.style.top = `${Math.max(margin, top)}px`;
+    }
+    async function showProvision(event, ref) {
+      event.stopPropagation();
+      const popover = document.getElementById('provisionPopover');
+      document.getElementById('provisionTitle').textContent = ref || 'Provision';
+      document.getElementById('provisionSource').textContent = 'Loading...';
+      document.getElementById('provisionText').textContent = '';
+      placeProvisionPopover(event);
+      popover.classList.add('active');
+      try {
+        const provision = await fetchJson(`/api/provisions?ref=${encodeURIComponent(ref)}`);
+        document.getElementById('provisionTitle').textContent = `${provision.act_key} Section ${provision.section_no}${provision.title ? `: ${provision.title}` : ''}`;
+        document.getElementById('provisionSource').textContent = `${provision.act_name} | ${provision.source_file || 'local bare act'}`;
+        document.getElementById('provisionText').textContent = provision.text || 'No text stored for this provision.';
+      } catch (err) {
+        document.getElementById('provisionSource').textContent = 'No local bare Act match found.';
+        document.getElementById('provisionText').textContent = `Reference: ${ref}`;
+      }
+    }
+    function decisionBrief(c) {
+      return c.decision_brief || {
+        result: 'Needs review',
+        plea: c.brief_facts || 'No plea extracted yet.',
+        court_action: c.directions || [],
+        grounds: [c.ratio || c.holding].filter(Boolean),
+        provisions: c.sections || [],
+        source_label: c.detected_format || 'generic'
+      };
+    }
+    let isUploading = false;
+    let isSaving = false;
+
+    function setNotice(text) {
+      document.getElementById('notice').textContent = text || '';
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      closeProvision();
+    }
+    function closeOnBackdrop(event, id) {
+      if (event.target.id === id) closeModal(id);
+    }
+    async function fetchJson(url, options) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+    async function applyFilters() {
+      const params = new URLSearchParams();
+      const search = document.getElementById('searchInput').value.trim();
+      const type = document.getElementById('petitionTypeFilter').value;
+      const section = document.getElementById('sectionFilter').value.trim();
+      const year = document.getElementById('yearFilter').value.trim();
+      if (search) params.set('search', search);
+      if (type) params.set('petition_type', type);
+      if (section) params.set('section', section);
+      if (year) params.set('year', year);
+      const data = await fetchJson(`/api/citations?${params.toString()}`);
+      renderCitations(data);
+      await refreshStats();
+    }
+    async function refreshStats() {
+      const stats = await fetchJson('/api/stats');
+      document.getElementById('statTotal').textContent = stats.total_citations ?? 0;
+      document.getElementById('statApplications').textContent = stats.application_count ?? 0;
+      document.getElementById('statPetitions').textContent = stats.petition_count ?? 0;
+      document.getElementById('statAppeals').textContent = stats.appeal_count ?? 0;
+      document.getElementById('statOtherTypes').textContent = stats.other_type_count ?? 0;
+    }
+    async function autoRefresh() {
+      const modalOpen = Boolean(document.querySelector('.modal.active'));
+      if (modalOpen || isUploading || isSaving) return;
+      try {
+        await applyFilters();
+      } catch (err) {
+        setNotice(`Auto-refresh failed: ${err.message}`);
+      }
+    }
+    function resetFilters() {
+      ['searchInput', 'sectionFilter', 'yearFilter'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('petitionTypeFilter').value = '';
+      applyFilters();
+    }
+    function renderCitations(citations) {
+      const container = document.getElementById('citationsContainer');
+      if (!citations.length) {
+        container.innerHTML = '<div class="empty"><h2>No results</h2><p class="muted">Try a different search.</p></div>';
+        return;
+      }
+      container.innerHTML = citations.map(c => {
+        const brief = decisionBrief(c);
+        const provisions = (brief.provisions || c.sections || []).slice(0, 5);
+        const moreProvisions = (brief.provisions || c.sections || []).length > 5;
+        const provisionsBadges = provisions.map(p => provisionBadgeHtml(p)).join('');
+        const firstGround = firstValue(brief.grounds, c.ratio || c.holding || 'No grounds extracted yet.');
+        const groundsPreview = firstGround.length > 120 ? firstGround.substring(0, 120) + '...' : firstGround;
+
+        return `
+        <article class="card" data-id="${c.id}">
+          <span class="result">${esc(brief.result || 'Needs review')}</span>
+          <h2>${esc(c.citation_name)}</h2>
+
+          <div>
+            <div class="decision-label">Plea</div>
+            <div class="summary">${esc(brief.plea || c.brief_facts || 'No plea extracted yet.')}</div>
+          </div>
+
+          <div>
+            <div class="decision-label">Grounds</div>
+            <div class="summary">${esc(groundsPreview)}</div>
+          </div>
+
+          <div class="badges">
+            <span class="badge type">${esc(c.petition_type || 'Other')}</span>
+            <span class="badge">${esc(c.court || 'Unknown court')}</span>
+            <span class="badge">${esc(c.year || 'No year')}</span>
+          </div>
+
+          ${provisions.length > 0 ? `
+          <div>
+            <div class="decision-label">Key Provisions</div>
+            <div class="badges">
+              ${provisionsBadges}
+              ${moreProvisions ? `<span class="muted" style="font-size:11px">+${(brief.provisions || c.sections || []).length - 5} more</span>` : ''}
+            </div>
+          </div>
+          ` : ''}
+
+          <div class="muted" style="font-size: 12px;">
+            ${(c.judges || []).slice(0, 2).join(', ') || 'N/A'}
+            ${c.case_number ? ` | ${esc(c.case_number)}` : ''}
+          </div>
+
+          <div class="actions">
+            <button onclick="viewCitation(${c.id})">View Details</button>
+            <button class="secondary" onclick="editCitation(${c.id})">Edit</button>
+            <button class="danger" onclick="deleteCitation(${c.id})">Delete</button>
+          </div>
+        </article>
+        `;
+      }).join('');
+    }
+    async function viewCitation(id) {
+      const c = await fetchJson(`/api/citations/${id}`);
+      const brief = decisionBrief(c);
+      document.getElementById('viewTitle').textContent = c.citation_name || 'Untitled citation';
+
+      // Build grounds list (max 4)
+      const groundsList = (brief.grounds || []).slice(0, 4);
+      const moreGrounds = (brief.grounds || []).length > 4;
+
+      // Build provisions (clickable)
+      const provisionsHtml = provisionInlineHtml(brief.provisions || []);
+
+      document.getElementById('viewBody').innerHTML = `
+        <div class="decision-box">
+          <span class="result">${esc(brief.result || 'Needs review')}</span>
+          <div class="decision-grid">
+            <div style="grid-column: 1 / -1;">
+              <h3>Plea</h3>
+              <p>${esc(brief.plea || c.brief_facts || 'N/A')}</p>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <h3>Grounds for Decision</h3>
+              <ul>${groundsList.map(g => `<li>${esc(g)}</li>`).join('') || '<li>N/A</li>'}</ul>
+              ${moreGrounds ? `<p class="muted" style="font-size:12px">+${(brief.grounds || []).length - 4} more grounds</p>` : ''}
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <h3>Key Provisions (clickable)</h3>
+              <p>${provisionsHtml || 'N/A'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 12px; background: var(--panel-2); border-radius: 8px;">
+          <p class="muted" style="font-size: 13px; margin: 0;">
+            ${esc(c.court || 'N/A')} | ${esc(c.petition_type || 'N/A')} | ${esc(c.year || 'N/A')} |
+            Case: ${esc(c.case_number || 'N/A')} |
+            Date: ${esc(c.date_judgment || 'N/A')} |
+            Judges: ${esc((c.judges || []).slice(0, 3).join(', ') || 'N/A')}
+          </p>
+        </div>
+      `;
+      document.getElementById('viewModal').classList.add('active');
+    }
+    async function editCitation(id) {
+      const c = await fetchJson(`/api/citations/${id}`);
+      document.getElementById('editId').value = c.id;
+      document.getElementById('editCitationName').value = c.citation_name || '';
+      document.getElementById('editCourt').value = c.court || '';
+      document.getElementById('editYear').value = c.year || '';
+      document.getElementById('editPetitionType').value = c.petition_type || 'Other';
+      document.getElementById('editDetectedFormat').value = c.detected_format || 'generic';
+      document.getElementById('editCaseNumber').value = c.case_number || '';
+      document.getElementById('editNeutralCitation').value = c.neutral_citation || '';
+      document.getElementById('editDateJudgment').value = c.date_judgment || '';
+      document.getElementById('editOrderType').value = c.order_type || '';
+      document.getElementById('editNextHearingDate').value = c.next_hearing_date || '';
+      document.getElementById('editDisposition').value = c.disposition || '';
+      document.getElementById('editSccCitation').value = c.scc_citation || '';
+      document.getElementById('editManupatraCitation').value = c.manupatra_citation || '';
+      document.getElementById('editIndianKanoonUrl').value = c.indian_kanoon_url || '';
+      document.getElementById('editBench').value = arrayToComma(c.bench);
+      document.getElementById('editPartyNames').value = arrayToComma(c.party_names);
+      document.getElementById('editAppearances').value = arrayToLines(c.appearances);
+      document.getElementById('editSections').value = arrayToComma(c.sections);
+      document.getElementById('editLaws').value = arrayToComma(c.laws);
+      document.getElementById('editCitedCases').value = arrayToLines(c.cited_cases);
+      document.getElementById('editActsReferred').value = arrayToLines(c.acts_referred);
+      document.getElementById('editHeadnote').value = c.headnote || '';
+      document.getElementById('editImportantPrinciples').value = arrayToLines(c.important_principles);
+      document.getElementById('editSubsections').value = JSON.stringify(c.subsections || {}, null, 2);
+      document.getElementById('editBriefFacts').value = c.brief_facts || '';
+      document.getElementById('editDirections').value = arrayToLines(c.directions);
+      document.getElementById('editHolding').value = c.holding || '';
+      document.getElementById('editRatio').value = c.ratio || '';
+      document.getElementById('editHeadnotes').value = arrayToLines(c.headnotes);
+      document.getElementById('editKeyQuotes').value = arrayToLines(c.key_quotes);
+      document.getElementById('editJudges').value = arrayToComma(c.judges);
+      document.getElementById('editTags').value = arrayToComma(c.tags);
+      document.getElementById('editNotes').value = c.notes || '';
+      document.getElementById('editModal').classList.add('active');
+    }
+    async function saveCitation(event) {
+      event.preventDefault();
+      isSaving = true;
+      const id = document.getElementById('editId').value;
+      let subsections = {};
+      try {
+        subsections = JSON.parse(document.getElementById('editSubsections').value || '{}');
+      } catch (err) {
+        setNotice('Subsections must be valid JSON.');
+        isSaving = false;
+        return;
+      }
+      const payload = {
+        citation_name: document.getElementById('editCitationName').value,
+        court: document.getElementById('editCourt').value,
+        year: document.getElementById('editYear').value,
+        petition_type: document.getElementById('editPetitionType').value,
+        detected_format: document.getElementById('editDetectedFormat').value,
+        case_number: document.getElementById('editCaseNumber').value,
+        neutral_citation: document.getElementById('editNeutralCitation').value,
+        date_judgment: document.getElementById('editDateJudgment').value,
+        order_type: document.getElementById('editOrderType').value,
+        next_hearing_date: document.getElementById('editNextHearingDate').value,
+        disposition: document.getElementById('editDisposition').value,
+        scc_citation: document.getElementById('editSccCitation').value,
+        manupatra_citation: document.getElementById('editManupatraCitation').value,
+        indian_kanoon_url: document.getElementById('editIndianKanoonUrl').value,
+        bench: commaToArray(document.getElementById('editBench').value),
+        party_names: commaToArray(document.getElementById('editPartyNames').value),
+        appearances: linesToArray(document.getElementById('editAppearances').value),
+        sections: commaToArray(document.getElementById('editSections').value),
+        laws: commaToArray(document.getElementById('editLaws').value),
+        cited_cases: linesToArray(document.getElementById('editCitedCases').value),
+        acts_referred: linesToArray(document.getElementById('editActsReferred').value),
+        headnote: document.getElementById('editHeadnote').value,
+        important_principles: linesToArray(document.getElementById('editImportantPrinciples').value),
+        subsections,
+        brief_facts: document.getElementById('editBriefFacts').value,
+        directions: linesToArray(document.getElementById('editDirections').value),
+        holding: document.getElementById('editHolding').value,
+        ratio: document.getElementById('editRatio').value,
+        headnotes: linesToArray(document.getElementById('editHeadnotes').value),
+        key_quotes: linesToArray(document.getElementById('editKeyQuotes').value),
+        judges: commaToArray(document.getElementById('editJudges').value),
+        tags: commaToArray(document.getElementById('editTags').value),
+        notes: document.getElementById('editNotes').value
+      };
+      try {
+        await fetchJson(`/api/citations/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        closeModal('editModal');
+        await applyFilters();
+      } finally {
+        isSaving = false;
+      }
+    }
+    async function deleteCitation(id) {
+      if (!confirm('Delete this citation?')) return;
+      await fetchJson(`/api/delete/${id}`, {method: 'DELETE'});
+      applyFilters();
+    }
+    async function uploadPdf() {
+      const input = document.getElementById('pdfUpload');
+      if (!input.files.length) return setNotice('Choose a PDF first.');
+      const form = new FormData();
+      form.append('pdf', input.files[0]);
+      form.append('filename', input.files[0].name);
+      setNotice('Processing PDF...');
+      isUploading = true;
+      try {
+        await fetchJson('/api/upload', {method: 'POST', body: form});
+        input.value = '';
+        setNotice('Citation saved.');
+        await applyFilters();
+      } catch (err) {
+        setNotice(err.message);
+      } finally {
+        isUploading = false;
+      }
+    }
+    async function exportGoogle() {
+      setNotice('Exporting to Google Docs...');
+      try {
+        const data = await fetchJson('/api/export/google', {method: 'POST'});
+        setNotice(`Exported ${data.count} citations: ${data.url}`);
+      } catch (err) {
+        setNotice(err.message);
+      }
+    }
+    setInterval(autoRefresh, 10000);
+    document.addEventListener('click', closeProvision);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeProvision();
+    });
+  </script>
+</body>
+</html>

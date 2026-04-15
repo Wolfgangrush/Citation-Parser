@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+if [ ! -d ".venv" ]; then
+  echo "Virtual environment missing. Running setup first..."
+  ./setup.sh
+fi
+
+mkdir -p logs
+PYTHON_BIN=".venv/bin/python3"
+
+BACKEND_URL="${BACKEND_URL:-$("$PYTHON_BIN" - <<'PY'
+from dotenv import load_dotenv
+import os
+load_dotenv(".env")
+print(os.getenv("BACKEND_URL", "http://localhost:5757"))
+PY
+)}"
+BOT_PID=""
+BACKEND_PID=""
+
+cleanup() {
+  if [ -n "${BACKEND_PID:-}" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
+    kill "$BACKEND_PID" 2>/dev/null || true
+  fi
+  if [ -n "${BOT_PID:-}" ] && kill -0 "$BOT_PID" 2>/dev/null; then
+    kill "$BOT_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup INT TERM EXIT
+
+if "$PYTHON_BIN" - <<'PY' >/dev/null 2>&1
+from dotenv import load_dotenv
+import urllib.request
+import os
+load_dotenv(".env")
+backend_url = os.getenv("BACKEND_URL", "http://localhost:5050").rstrip("/")
+urllib.request.urlopen(f"{backend_url}/api/stats", timeout=1)
+PY
+then
+  echo "Backend already running."
+  BACKEND_READY=true
+else
+  echo "Starting backend..."
+  "$PYTHON_BIN" backend.py > logs/backend.log 2>&1 &
+  BACKEND_PID=$!
+fi
+
+for _ in {1..30}; do
+  if [ "${BACKEND_READY:-false}" = "true" ]; then
+    break
+  fi
+  if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+    echo "Backend failed to start. See logs/backend.log"
+    exit 1
+  fi
+  if "$PYTHON_BIN" - <<'PY' >/dev/null 2>&1
+from dotenv import load_dotenv
+import urllib.request
+import os
+load_dotenv(".env")
+backend_url = os.getenv("BACKEND_URL", "http://localhost:5050").rstrip("/")
+urllib.request.urlopen(f"{backend_url}/api/stats", timeout=1)
+PY
+  then
+    BACKEND_READY=true
+    break
+  fi
+  sleep 1
+done
+
+if [ "${BACKEND_READY:-false}" != "true" ]; then
+  echo "Backend did not become ready. See logs/backend.log"
+  exit 1
+fi
+
+if pgrep -f "[t]elegram_bot.py" >/dev/null 2>&1; then
+  echo "Telegram bot already running."
+else
+  echo "Starting Telegram bot..."
+  "$PYTHON_BIN" telegram_bot.py > logs/telegram_bot.log 2>&1 &
+  BOT_PID=$!
+fi
+
+echo "Dashboard: $BACKEND_URL"
+echo "Logs: logs/backend.log and logs/telegram_bot.log"
+echo "Press Ctrl-C to stop backend and bot."
+echo ""
+echo "For phone access over Tailscale, run: ./phone_url.sh"
+
+sleep 2
+if [ -n "${BOT_PID:-}" ] && ! kill -0 "$BOT_PID" 2>/dev/null; then
+  echo "Telegram bot failed to start. See logs/telegram_bot.log"
+  exit 1
+fi
+
+if [ "${OPEN_DASHBOARD:-true}" = "true" ] && command -v open >/dev/null 2>&1; then
+  open "$BACKEND_URL" >/dev/null 2>&1 || true
+fi
+
+wait

@@ -1,0 +1,13 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+instance/
+logs/
+pdfs_received/
+exports/
+citations.db
+google_token.json
+google_credentials.json
+.DS_Store

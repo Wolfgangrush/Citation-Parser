@@ -1,0 +1,303 @@
+#!/usr/bin/env zsh
+# SCC Parser Control Script
+# Usage: sccparser [start|stop|restart|status|logs]
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+VENV_BIN="$SCRIPT_DIR/.venv/bin"
+PID_DIR="$SCRIPT_DIR/.pids"
+LOG_DIR="$SCRIPT_DIR/logs"
+mkdir -p "$PID_DIR" "$LOG_DIR"
+
+BACKEND_PID_FILE="$PID_DIR/backend.pid"
+BOT_PID_FILE="$PID_DIR/bot.pid"
+
+PORT="${SCCPARSER_PORT:-5757}"
+BACKEND_URL="http://localhost:$PORT"
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[OK]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if .venv exists
+check_venv() {
+    if [ ! -d "$SCRIPT_DIR/.venv" ]; then
+        log_warning "Virtual environment not found. Running setup..."
+        ./setup.sh
+    fi
+}
+
+# Check if a process is running
+is_running() {
+    local pid_file="$1"
+    if [ -f "$pid_file" ]; then
+        local pid=$(cat "$pid_file")
+        if kill -0 "$pid" 2>/dev/null; then
+            return 0
+        else
+            rm -f "$pid_file"
+        fi
+    fi
+    return 1
+}
+
+# Wait for backend to be ready
+wait_for_backend() {
+    local max_wait=60
+    local waited=0
+    log_info "Waiting for backend to be ready..."
+
+    while [ $waited -lt $max_wait ]; do
+        if curl -sSf "${BACKEND_URL}/api/stats" >/dev/null 2>&1; then
+            log_success "Backend is ready!"
+            return 0
+        fi
+        sleep 1
+        ((waited++))
+        echo -n "."
+    done
+    echo ""
+    log_error "Backend failed to start within ${max_wait}s"
+    return 1
+}
+
+# Start backend
+start_backend() {
+    if is_running "$BACKEND_PID_FILE"; then
+        log_warning "Backend already running (PID: $(cat $BACKEND_PID_FILE))"
+        return 0
+    fi
+
+    log_info "Starting backend on port $PORT..."
+    # Set env vars and run
+    BACKEND_PORT="$PORT" BACKEND_URL="$BACKEND_URL" nohup "$VENV_BIN/python3" backend.py > "$LOG_DIR/backend.log" 2>&1 &
+    echo $! > "$BACKEND_PID_FILE"
+
+    sleep 3
+    if kill -0 $(cat "$BACKEND_PID_FILE") 2>/dev/null; then
+        wait_for_backend
+        return $?
+    else
+        log_error "Backend failed to start. Check $LOG_DIR/backend.log"
+        return 1
+    fi
+}
+
+# Start Telegram bot
+start_bot() {
+    if is_running "$BOT_PID_FILE"; then
+        log_warning "Telegram bot already running (PID: $(cat $BOT_PID_FILE))"
+        return 0
+    fi
+
+    log_info "Starting Telegram bot..."
+    BACKEND_URL="$BACKEND_URL" nohup "$VENV_BIN/python3" telegram_bot.py > "$LOG_DIR/bot.log" 2>&1 &
+    echo $! > "$BOT_PID_FILE"
+
+    sleep 3
+    if kill -0 $(cat "$BOT_PID_FILE") 2>/dev/null; then
+        log_success "Telegram bot started (PID: $(cat $BOT_PID_FILE))"
+        return 0
+    else
+        log_error "Bot failed to start. Check $LOG_DIR/bot.log"
+        return 1
+    fi
+}
+
+# Start all services
+start_all() {
+    check_venv
+
+    if is_running "$BACKEND_PID_FILE" && is_running "$BOT_PID_FILE"; then
+        log_warning "SCC Parser is already running!"
+        status
+        return 0
+    fi
+
+    echo ""
+    log_info "Starting SCC Parser..."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    if start_backend; then
+        if start_bot; then
+            echo ""
+            log_success "SCC Parser is now running 24/7!"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  Dashboard:    $BACKEND_URL"
+            echo "  Logs:         $LOG_DIR/"
+            echo "  Status:       ./status"
+            echo "  Stop:         ./off"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+
+            # Open dashboard if on macOS
+            if [ "$(uname)" = "Darwin" ] && [ -t 1 ]; then
+                sleep 1
+                open "$BACKEND_URL" 2>/dev/null || true
+            fi
+            return 0
+        fi
+    fi
+
+    log_error "Failed to start SCC Parser"
+    return 1
+}
+
+# Stop services
+stop_all() {
+    local stopped=0
+
+    if is_running "$BOT_PID_FILE"; then
+        log_info "Stopping Telegram bot..."
+        kill $(cat "$BOT_PID_FILE") 2>/dev/null || true
+        rm -f "$BOT_PID_FILE"
+        log_success "Bot stopped"
+        ((stopped++))
+    fi
+
+    if is_running "$BACKEND_PID_FILE"; then
+        log_info "Stopping backend..."
+        kill $(cat "$BACKEND_PID_FILE") 2>/dev/null || true
+        rm -f "$BACKEND_PID_FILE"
+        log_success "Backend stopped"
+        ((stopped++))
+    fi
+
+    if [ $stopped -eq 0 ]; then
+        log_warning "SCC Parser is not running"
+    else
+        log_success "SCC Parser stopped ($stopped service(s))"
+    fi
+}
+
+# Restart services
+restart_all() {
+    stop_all
+    sleep 2
+    start_all
+}
+
+# Show status
+status() {
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  SCC Parser Status"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    if is_running "$BACKEND_PID_FILE"; then
+        local pid=$(cat "$BACKEND_PID_FILE")
+        echo -e "  Backend:      ${GREEN}Running${NC} (PID: $pid)"
+        echo -e "  Dashboard:    $BACKEND_URL"
+    else
+        echo -e "  Backend:      ${RED}Stopped${NC}"
+    fi
+
+    if is_running "$BOT_PID_FILE"; then
+        local pid=$(cat "$BOT_PID_FILE")
+        echo -e "  Telegram Bot: ${GREEN}Running${NC} (PID: $pid)"
+    else
+        echo -e "  Telegram Bot: ${RED}Stopped${NC}"
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+}
+
+# Show logs
+show_logs() {
+    local service="${1:-backend}"
+    local log_file="$LOG_DIR/${service}.log"
+
+    if [ ! -f "$log_file" ]; then
+        log_error "No log file found for $service"
+        return 1
+    fi
+
+    echo "Showing last 50 lines of $service log (Ctrl+C to exit):"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    tail -f -n 50 "$log_file"
+}
+
+# Rotate logs
+rotate_logs() {
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    for log in "$LOG_DIR"/*.log; do
+        if [ -f "$log" ]; then
+            local base=$(basename "$log" .log)
+            mv "$log" "$LOG_DIR/${base}_${timestamp}.log"
+            gzip "$LOG_DIR/${base}_${timestamp}.log" 2>/dev/null || true
+        fi
+    done
+    log_success "Logs rotated and compressed"
+}
+
+# Main command handler
+case "${1:-start}" in
+    start|on|up)
+        start_all
+        ;;
+    stop|off|down|halt)
+        stop_all
+        ;;
+    restart|reload)
+        restart_all
+        ;;
+    status)
+        status
+        ;;
+    logs)
+        show_logs "${2:-backend}"
+        ;;
+    bot-logs)
+        show_logs "bot"
+        ;;
+    rotate-logs)
+        rotate_logs
+        ;;
+    *)
+        echo "SCC Parser - 24/7 Legal Citation Manager"
+        echo ""
+        echo "Usage: sccparser [command]"
+        echo ""
+        echo "Commands:"
+        echo "  start, on, up          Start all services"
+        echo "  stop, off, down        Stop all services"
+        echo "  restart, reload        Restart all services"
+        echo "  status                 Show running status"
+        echo "  logs [service]         Follow logs (backend|bot)"
+        echo "  bot-logs               Follow bot logs"
+        echo "  rotate-logs            Rotate and compress logs"
+        echo ""
+        echo "Examples:"
+        echo "  ./on                   Start everything"
+        echo "  ./off                  Stop everything"
+        echo "  ./status               Check if running"
+        echo "  ./logs                 Watch backend logs"
+        echo ""
+        ;;
+esac

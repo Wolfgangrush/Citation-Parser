@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.sccparser.service</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/USERNAME/Desktop/Mac/sccparser/start</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Users/USERNAME/Desktop/Mac/sccparser</string>
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/Desktop/Mac/sccparser/logs/service.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/Desktop/Mac/sccparser/logs/service-error.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SCCPARSER_PORT</key>
+        <string>5757</string>
+        <key>OPEN_DASHBOARD</key>
+        <string>false</string>
+    </dict>
+</dict>
+</plist>

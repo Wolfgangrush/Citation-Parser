@@ -1,0 +1,12 @@
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-CORS==4.0.1
+SQLAlchemy==2.0.31
+python-telegram-bot==21.4
+pdfplumber==0.11.2
+requests==2.32.3
+python-dotenv==1.0.1
+google-api-python-client==2.137.0
+google-auth==2.32.0
+google-auth-oauthlib==1.2.1
+Werkzeug==3.0.3
