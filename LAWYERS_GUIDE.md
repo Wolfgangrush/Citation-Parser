@@ -1,304 +1,267 @@
 # Lawyer's Guide to SCC Parser
 
-## Why Every Lawyer Needs This Tool
+## The Problem: Wasted Research Hours
 
-As a lawyer, you spend hours every week:
-- Manually typing case details from judgment PDFs
-- Searching through scattered files for that one citation
-- Copy-pasting case names, numbers, and court details
-- Losing track of important judgments you meant to read
-- Struggling to remember which case cited which provision
+Every lawyer knows this cycle:
 
-**SCC Parser automates all of this.**
+```
+New Case → Search Manupatra/SCC/LawFinder → Find Citations → Use in Arguments → Forget
+Next Similar Case → Search Manupatra/SCC/LawFinder Again → Find Same Citations Again
+```
+
+**You're doing the same research over and over.**
 
 ---
 
-## How It Helps You
+## What SCC Parser Does
 
-### 1. Save 30+ Minutes Per Judgment
+**SCC Parser = Your Personal Citation Library**
 
-**Before:**
-- Download judgment PDF
-- Open PDF, scroll through pages
-- Manually type case name, number, court, date
-- Copy-paste headnotes, important paragraphs
-- Save in some folder (hope you find it later)
-- **Time spent: 30-45 minutes per case**
+When you find a good citation on Manupatra, SCC Online, or LawFinder:
+1. Download the PDF
+2. Forward it to your Telegram bot
+3. The bot extracts everything automatically:
+   - Case name & number
+   - Court & bench
+   - **Petition type** (Appeal, Bail Application, Writ Petition, etc.)
+   - **Disposition** (Allowed, Dismissed, Partially Allowed)
+   - **Ratio decidendi** (the legal principle)
+   - **Acts & Sections referred**
+   - **Headnote** (case summary)
+   - **Key quotes** from the judgment
+4. Save it to your local machine
 
-**After:**
-- Forward PDF to your Telegram bot
-- Done. Everything extracted automatically.
-- **Time spent: 10 seconds**
-
-### 2. Never Lose a Judgment Again
-
-All your citations are stored in one searchable database:
-- Search by case name, number, court, year
-- Search by acts referred (e.g., "IPC 302")
-- Search by tags you add
-- Filter by court type
-
-### 3. Instant Access to Case Law While Drafting
-
-When you're drafting a plaint or written submission:
-- Open dashboard at `http://localhost:5757`
-- Search for "Section 138 NI Act"
-- See ALL cases that cited this provision
-- Click to open full judgment details
-- Copy-paste relevant paragraphs
-
-### 4. Build Your Personal Case Library
-
-Your knowledge accumulates over time:
-- Every judgment you process stays in your library
-- Search across 100+ cases in seconds
-- Find patterns (which courts interpret which provisions how)
-- Export entire library to Google Docs for sharing with juniors
-
-### 5. Works While You're in Court
-
-The Telegram bot runs 24/7:
-- Junior counsel sends PDF to bot from office
-- By the time you return from court, case is indexed
-- No manual work needed from you
+**Next time you need that citation? Search in 2 seconds.**
 
 ---
 
-## Real-World Use Cases
+## Real Example: Bail Matters
 
-### Use Case 1: Finding All Cases on a Legal Provision
+### Without SCC Parser
 
-**Scenario:** You're arguing a bail matter under Section 439 CrPC and need recent High Court orders.
+**Month 1:** You're arguing a Section 439 CrPC bail matter
+- Search Manupatra for "Section 439 bail principles"
+- Find 8 good cases
+- Download PDFs, read through them
+- Use 3 cases in your arguments
+- Case over. You move on. PDFs sit in a folder somewhere.
 
-**Without SCC Parser:**
-- Manually search through your downloads folder
-- Google search (time-consuming, results may be irrelevant)
-- Ask colleagues (they might not remember)
-- **Time: 30-60 minutes**
+**Month 3:** Another bail matter under Section 439
+- **Problem:** Which cases did you use last time?
+- Search Manupatra again (can't find those exact cases)
+- Download new PDFs
+- Read through them again
+- **Wasted time: 2 hours**
 
-**With SCC Parser:**
-1. Open dashboard → Search "Section 439"
-2. See 12 cases that cited Section 439
-3. Filter by High Court, sort by date
-4. Click each case to read headnotes
-5. **Time: 2 minutes**
+### With SCC Parser
 
-### Use Case 2: Preparing for a Court Appearance
+**Month 1:** You're arguing a Section 439 CrPC bail matter
+- Search Manupatra for "Section 439 bail principles"
+- Find 8 good cases
+- Forward all 8 PDFs to your Telegram bot
+- Bot extracts: case name, court, petition type, disposition, ratio, sections
+- Case over. Everything is saved.
 
-**Scenario:** You have a matter listed tomorrow and need to review all relevant precedents.
-
-**Without SCC Parser:**
-- Search through multiple folders
-- Open each PDF to find relevant sections
-- Take notes manually
-- **Time: 2-3 hours**
-
-**With SCC Parser:**
-1. Search by case party name or number
-2. Dashboard shows headnote, important principles, key quotes
-3. See which acts and sections were discussed
-4. Copy relevant text directly to your notes
-5. **Time: 20 minutes**
-
-### Use Case 3: Junior Lawyer Research Support
-
-**Scenario:** You're a senior advocate. Your junior needs to find cases on a specific issue.
-
-**Without SCC Parser:**
-- Explain what to search for
-- Hope they find the right cases
-- Review their work (may have missed important cases)
-- **Time: 1-2 hours of supervision**
-
-**With SCC Parser:**
-1. Give junior access to dashboard
-2. They search by keyword/provision
-3. They see ALL relevant cases instantly
-4. They copy the needed citations
-5. **Time: 15 minutes, no supervision needed**
-
-### Use Case 4: Tracking Citation Patterns
-
-**Scenario:** You want to know how different High Courts are interpreting a new amendment.
-
-**Without SCC Parser:**
-- Manual tracking in Excel
-- Difficult to maintain
-- Easy to miss cases
-- **Time: Ongoing effort, unreliable**
-
-**With SCC Parser:**
-1. Search by the amended section
-2. See cases from different courts side-by-side
-3. Sort by date to see evolving interpretation
-4. Add tags for your analysis
-5. **Time: Setup is automatic, queries take seconds**
+**Month 3:** Another bail matter under Section 439
+- Open dashboard: `http://localhost:5757`
+- Search: "Section 439" or "bail"
+- See all 8 cases you found last time
+- Read the ratio (legal principle) of each
+- Click to open full details
+- Copy relevant headnotes
+- **Time spent: 5 minutes**
 
 ---
 
-## What Information Gets Extracted
+## What Gets Extracted
 
-For every judgment PDF you send, the system captures:
+When you send a citation PDF, the system captures:
 
-| Field | Why It Matters |
-|-------|----------------|
-| **Case Name** | Instantly searchable |
-| **Case Number** | Cite correctly in your pleadings |
-| **Court & Bench** | Know binding value |
-| **Judgment Date** | Check if it's latest law |
-| **Neutral Citation** | Modern citation format |
-| **Headnote** | Quick summary without reading full judgment |
-| **Important Principles** | The legal holding in plain language |
-| **Acts Referred** | Find other cases on same provision |
-| **Cases Cited** | Build your research chain |
-| **Key Quotes** | Copy-paste ready arguments |
-| **Disposition** | Know the outcome at a glance |
-| **Appearances** | Know who argued the case |
+| Field | Example | Why It Matters |
+|-------|---------|----------------|
+| **Case Name** | "State vs. Rahul Kumar" | Identify the case |
+| **Case Number** | "BAIL APPLN 456/2024" | Cite correctly |
+| **Court** | "Delhi High Court" | Know binding value |
+| **Petition Type** | "Criminal Anticipatory Bail" | Know case category |
+| **Disposition** | "Allowed" | Know the outcome |
+| **Ratio Decidendi** | "Section 439 is not a section..." | The legal holding |
+| **Acts Referred** | ["CrPC §439", "IPC §302"] | Find related cases |
+| **Headnote** | "The petitioner is accused..." | Quick summary |
+| **Key Quotes** | "Bail is rule, jail is exception" | Ready-to-use quotes |
+| **Judges** | ["Justice Sharma", "Justice Patel"] | Know who decided |
+| **Judgment Date** | "15-03-2024" | Check recency |
 
 ---
 
-## Workflow Examples
+## How to Use in Your Practice
 
-### Morning Court Routine
+### Step 1: Set Up (One Time)
 
-```
-8:00 AM  - Junior forwards 3 judgment PDFs to Telegram bot
-8:05 AM  - Bot extracts all metadata automatically
-9:30 AM  - You return from court
-9:35 AM  - Search dashboard for "Section 138"
-9:36 AM  - See yesterday's cases already in database
-9:40 AM  - Copy relevant headnote to your notes
-```
+Ask your junior to:
+1. Install SCC Parser
+2. Create Telegram bot
+3. Start the system: `sccparser on`
 
-### Research for Written Submission
+### Step 2: Build Your Library
 
-```
-1. Search "dishonour of cheque" in dashboard
-2. Filter by Supreme Court only
-3. See 8 cases with headnotes
-4. Click each to read important principles
-5. Copy 3 key quotes to your document
-6. Done in 10 minutes
-```
+Every time you find a good citation:
+- Download the PDF from Manupatra/SCC/LawFinder
+- Forward to your Telegram bot
+- Done!
 
-### Preparing for Moot/Internship
+**Tip:** Forward ALL citations you find, even if you're not sure you'll need them. Storage is unlimited.
+
+### Step 3: Search When You Need
+
+**Scenario:** You're drafting a bail petition and need case law on "anticipatory bail for economic offences"
 
 ```
-1. Search by subject area (e.g., "arbitration")
-2. See all cases you've collected
-3. Read headnotes to understand issues
-4. Click acts referred to read provisions
-5. Export relevant cases to Google Docs
-6. Share with your team
+1. Open dashboard: http://localhost:5757
+2. Search: "anticipatory bail economic"
+3. See 5 cases you've collected on this topic
+4. Click each case to see:
+   - Petition type (e.g., "Cr. Anticipatory Bail Applications")
+   - Disposition (Allowed/Dismissed)
+   - Ratio (legal principle)
+   - Key quotes you can copy
+5. Copy relevant text to your petition
 ```
 
 ---
 
-## Privacy & Security
+## Use Cases
 
-- **Local storage**: All data stays on YOUR computer
-- **No cloud uploads**: Your case library is private
-- **No subscription fees**: Use as much as you want
-- **Works offline**: Dashboard works without internet
+### Use Case 1: Finding Cases by Disposition
 
----
+**Question:** "Which Supreme Court cases on Section 138 NI Act were ALLOWED?"
 
-## Citation Formats Supported
+```
+Search: "Section 138"
+Filter: Court = Supreme Court, Disposition = Allowed
+Result: 6 cases where the appeal was allowed
+```
 
-| Source | Format | Example |
-|--------|--------|---------|
-| DigiLegal | SCC format | `# HEADNOTE #` |
-| SCC Online | Standard citation | `(2024) 10 SCC 456` |
-| Indian Kanoon | URL-based | `2024:SC:567` |
-| Manupatra | Manual format | `Manu/SC/2024/123` |
-| High Court | Raw orders | `CORAM: DATE:` format |
-| Supreme Court | Neutral citation | `2026 INSC 244` |
+### Use Case 2: Finding Ratio on Specific Legal Point
 
-**If your judgment PDF contains any of these formats, it will be parsed.**
+**Question:** "What did courts say about 'bail is rule, jail is exception'?"
 
----
+```
+Search: "bail is rule"
+Result: See all cases with this ratio, read the context
+```
 
-## Tips for Maximum Benefit
+### Use Case 3: Tracking Case Outcomes
 
-1. **Forward every judgment you receive** - Even if you don't need it today, you might need it next month
-2. **Use tags consistently** - Create tags like "bail", "arbitration", "civil revision"
-3. **Search before you research** - Check your library first before Googling
-4. **Export before big arguments** - Export relevant cases to Google Docs for offline access in court
-5. **Share with your chamber** - Juniors can contribute to the same library
+**Question:** "How many of my arbitration appeals were allowed vs dismissed?"
 
----
+```
+Filter: Petition Type = Arbitration Appeals
+Dashboard shows: 12 Allowed, 8 Dismissed
+Click each to see ratio for allowed/dismissed reasoning
+```
 
-## Time = Money
+### Use Case 4: Preparing for Similar Matters
 
-Let's calculate:
+**Scenario:** You handled a cheque bounce case last month. Now you have another one.
 
-| Activity | Traditional Way | With SCC Parser |
-|----------|-----------------|-----------------|
-| Processing 1 judgment | 30 minutes | 10 seconds |
-| Finding 5 cases on a topic | 1 hour | 2 minutes |
-| Preparing case law summary | 3 hours | 20 minutes |
-| Monthly time saved | - | **20+ hours** |
-
-If your billing rate is ₹5,000/hour:
-- **Monthly value: ₹1,00,000**
-- **Annual value: ₹12,00,000**
-
-And this tool costs you **nothing**.
+```
+Search: "Section 138 NI Act" or "cheque bounce"
+See all cases from your previous research
+Copy the ratio and headnotes that worked last time
+Adapt for current case
+```
 
 ---
 
-## Getting Started for Non-Technical Lawyers
+## Dashboard Features
 
-Don't worry if you're not tech-savvy. Here's the simple version:
+| Feature | What It Does |
+|---------|--------------|
+| **Search Bar** | Search case name, number, ratio, holding, PDF text |
+| **Petition Type Filter** | Filter by Appeals, Bail Applications, Writ Petitions, etc. |
+| **Section Filter** | Find cases that cited a specific section (e.g., "IPC 302") |
+| **Year Filter** | See only recent cases (e.g., 2023-2024) |
+| **Disposition Badge** | Quickly see if case was Allowed/Dismissed |
+| **Ratio Display** | Read the legal principle without opening full PDF |
+| **Acts Referred** | Click to see which sections were discussed |
+| **Edit Button** | Fix any extraction errors manually |
 
-**Step 1:** Ask your IT person/junior to install SCC Parser (5 minutes)
+---
 
-**Step 2:** Get your Telegram bot token from BotFather
+## Why This Saves Money
 
-**Step 3:** Start the system (`sccparser on`)
+Let's calculate for a typical lawyer:
 
-**Step 4:** Send a PDF to your bot
+| Activity | Traditional | With SCC Parser |
+|----------|-------------|-----------------|
+| Finding citations for new matter | 2 hours (research) | 10 minutes (search library) |
+| Re-finding previously used citations | 1 hour (research again) | 30 seconds (search) |
+| Reading through PDFs to find ratio | 30 minutes | 2 minutes (already extracted) |
+| Checking case disposition | 10 minutes (open PDF) | Instant (shown in dashboard) |
 
-**Step 5:** Open `http://localhost:5757` in your browser
+**Per case saved: ~3 hours**
+**10 similar cases per month: 30 hours saved**
+**At ₹5,000/hour: ₹1,50,000 per month**
 
-That's it. You're now building your case library automatically.
+---
+
+## Privacy First
+
+- All data stays on YOUR computer
+- No cloud uploads
+- No one else can access your research
+- Works without internet (after setup)
+- Your citations are your competitive advantage
 
 ---
 
 ## FAQ for Lawyers
 
-**Q: Does this work with scanned judgments?**
-A: Not yet. This works with text-based PDFs (most judgments from court websites are text-based).
-
-**Q: Can I access this from my phone?**
-A: Yes! The Telegram bot works from anywhere. Forward PDFs from your phone in court.
+**Q: Does this search Manupatra or SCC Online for me?**
+A: No. You still search Manupatra/SCC yourself. This tool saves what you find so you don't have to search again.
 
 **Q: What if the extraction is wrong?**
-A: You can edit any field in the dashboard. The AI gets better with more judgments.
+A: Click Edit in the dashboard and fix it manually. Your corrections are saved.
 
-**Q: Can my junior use this too?**
-A: Yes, if they're on the same network. Or you can export and share your library.
+**Q: Can I export my citations?**
+A: Yes! Export to Google Docs with one click.
 
-**Q: Will this work with Mac and Windows?**
-A: Currently optimized for Mac. Windows support coming soon.
+**Q: Will this work with scanned PDFs?**
+A: No, this works with text-based PDFs from legal databases.
 
-**Q: Do I need internet?**
-A: Only for the initial setup. After that, everything runs locally on your machine.
+**Q: Can my junior also use this?**
+A: Yes! Your junior can forward PDFs too. Everyone builds the same library.
+
+**Q: Do I need to know coding?**
+A: No. Once installed, just use Telegram and the dashboard like any website.
+
+---
+
+## Quick Start
+
+1. **Install:** Ask your junior to run `./install_sccparser.sh`
+2. **Start:** Run `sccparser on`
+3. **Use:** Forward citation PDFs to your Telegram bot
+4. **Search:** Open `http://localhost:5757`
+
+That's it. Start building your permanent citation library today.
 
 ---
 
 ## Bottom Line
 
-> **"The lawyer who has the best case library wins."**
+> **"Don't research the same case twice."**
 
-Every senior advocate will tell you: a significant part of legal practice is knowing the right precedent. SCC Parser gives you:
-- A **searchable** case library
-- **Automatic** data extraction
-- **24/7** access via Telegram
-- **Zero** ongoing costs
+Every senior advocate knows: the more cases you've seen, the better your arguments. SCC Parser ensures you never lose a good citation.
 
-Start building your advantage today.
+- ✅ Save every citation you find
+- ✅ Search by ratio, disposition, section
+- ✅ Build knowledge over time
+- ✅ Find what you need in seconds
+- ✅ Work faster, bill more
+
+Your personal citation library. Running 24/7 on your machine.
 
 ---
 
-*Built for lawyers, by lawyers. If you have suggestions, please open an issue on GitHub.*
+*Questions? Open an issue on GitHub.*
