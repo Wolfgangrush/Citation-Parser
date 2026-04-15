@@ -315,12 +315,42 @@
         <span class="notice" id="notice"></span>
       </div>
     </section>
+    <section class="panel" style="background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%); border-color: var(--accent);">
+      <h2 style="margin:0 0 12px; color:var(--accent-strong);">How This Helps You</h2>
+      <p style="margin:0 0 16px; color:var(--soft);">Stop researching the same cases twice. Build your personal citation library.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px;">
+        <div style="padding:12px; background:var(--input); border-radius:6px;">
+          <strong style="color:var(--accent-strong);">1. Find Citations</strong>
+          <p style="margin:6px 0 0; font-size:14px; color:var(--muted);">Search Manupatra, SCC, LawFinder like you normally do. Download the PDFs you want to save.</p>
+        </div>
+        <div style="padding:12px; background:var(--input); border-radius:6px;">
+          <strong style="color:var(--accent-strong);">2. Forward to Bot</strong>
+          <p style="margin:6px 0 0; font-size:14px; color:var(--muted);">Send PDFs to your Telegram bot. We extract case name, petition type, disposition, ratio, acts & sections.</p>
+        </div>
+        <div style="padding:12px; background:var(--input); border-radius:6px;">
+          <strong style="color:var(--accent-strong);">3. Search Instantly</strong>
+          <p style="margin:6px 0 0; font-size:14px; color:var(--muted);">Next time you need similar cases, search by ratio, disposition, or section. Find in seconds, not hours.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border); display:flex; gap:20px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px;">
+          <strong style="color:var(--warn);">Without This:</strong>
+          <p style="margin:6px 0 0; font-size:14px; color:var(--muted);">Search Manupatra again → Download PDFs again → Read through again → Find the same cases you found last time.</p>
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <strong style="color:var(--accent-strong);">With This:</strong>
+          <p style="margin:6px 0 0; font-size:14px; color:var(--muted);">Search your library → See all saved citations → Read the ratio → Copy to your arguments. Done in 2 minutes.</p>
+        </div>
+      </div>
+    </section>
+
 
     <section id="citationsContainer" class="grid">
       {% if citations %}
         {% for c in citations %}
         {% set brief = c.decision_brief or {} %}
-        {% set provisions = brief.provisions or c.sections or [] %}
         {% set first_ground = (brief.grounds or [c.ratio or c.holding or 'No grounds extracted.'])[0] %}
         <article class="card" data-id="{{ c.id }}">
           <span class="result">{{ brief.result or 'Needs review' }}</span>
