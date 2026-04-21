@@ -220,10 +220,12 @@ The system is designed to run continuously:
 To start SCC Parser automatically when your Mac boots:
 
 ```bash
-# Copy the launchd plist to ~/Library/LaunchAgents/
-cp com.sccparser.service.plist ~/Library/LaunchAgents/
+# Copy the example plist and edit paths to match your machine
+cp com.sccparser.service.plist.example com.sccparser.service.plist
+# Edit com.sccparser.service.plist — replace /path/to/sccparser with your actual path
 
-# Load the service
+# Copy to LaunchAgents and load
+cp com.sccparser.service.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.sccparser.service.plist
 
 # To unload later:

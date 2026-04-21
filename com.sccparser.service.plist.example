@@ -6,18 +6,18 @@
     <string>com.sccparser.service</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/USERNAME/Desktop/Mac/sccparser/start</string>
+        <string>/path/to/sccparser/start</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>WorkingDirectory</key>
-    <string>/Users/USERNAME/Desktop/Mac/sccparser</string>
+    <string>/path/to/sccparser</string>
     <key>StandardOutPath</key>
-    <string>/Users/USERNAME/Desktop/Mac/sccparser/logs/service.log</string>
+    <string>/path/to/sccparser/logs/service.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/USERNAME/Desktop/Mac/sccparser/logs/service-error.log</string>
+    <string>/path/to/sccparser/logs/service-error.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>SCCPARSER_PORT</key>
