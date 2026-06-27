@@ -1,3 +1,19 @@
+<div align="center">
+
+<img src="docs/banner.png" width="820"/>
+
+**The easiest way for any lawyer to save and remember the citations they've used.**
+
+Visit the live site: [wolfgangrush.github.io](https://wolfgangrush.github.io)
+
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Local-first](https://img.shields.io/badge/local--first-yes-blue.svg)
+![Built for lawyers](https://img.shields.io/badge/built%20for-lawyers-1f6feb.svg)
+![Lawtech](https://img.shields.io/badge/lawtech-open%20source-purple.svg)
+
+</div>
+
+
 # Legal Citation Manager
 
 Local-first 24/7 system for receiving court judgment PDFs through Telegram, extracting citation metadata with AI, storing it in SQLite, searching/editing through a Flask dashboard, and exporting the library to Google Docs.
